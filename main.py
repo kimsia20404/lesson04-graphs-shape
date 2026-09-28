@@ -69,6 +69,17 @@ def load_data():
         df["first_week_audi"], errors="coerce"
     ).fillna(0)
 
+    # 10위권에 머문 날수를 숫자로 변환
+    df["days_in_top10"] = (
+        df["days_in_top10"]
+        .astype(str)
+        .str.replace(",", "", regex=False)
+        .str.strip()
+    )
+    df["days_in_top10"] = pd.to_numeric(
+        df["days_in_top10"], errors="coerce"
+    ).fillna(0)
+
     return df
 
 
@@ -424,6 +435,96 @@ st.text_input(
     "이 그래프로 알 수 있는 것",
     placeholder="한 문장으로 적어 보세요.",
     key="graph7_caption",
+)
+
+
+
+
+# --------------------------------------------------
+# 그래프 8. 10위권 체류 기간과 총 관객의 관계
+# --------------------------------------------------
+st.divider()
+st.header("그래프 8. 10위권에 오래 머문 영화는 총 관객도 많은가")
+
+fig8 = px.scatter(
+    df,
+    x="days_in_top10",
+    y="total_audi",
+    hover_name="movieNm",
+    custom_data=["movieNm", "days_in_top10", "total_audi"],
+    title="10위권에 오래 머문 영화는 총 관객도 많은가",
+    labels={
+        "days_in_top10": "10위권에 머문 날수",
+        "total_audi": "총 관객",
+    },
+)
+
+fig8.update_traces(
+    hovertemplate=(
+        "영화명: %{customdata[0]}<br>"
+        "10위권에 머문 날수: %{customdata[1]:,}일<br>"
+        "총 관객: %{customdata[2]:,}명"
+        "<extra></extra>"
+    )
+)
+
+fig8.update_layout(
+    xaxis_title="10위권에 머문 날수",
+    yaxis_title="총 관객",
+    margin=dict(t=60, b=20, l=20, r=20),
+)
+
+st.plotly_chart(fig8, use_container_width=True)
+
+st.text_input(
+    "이 그래프로 알 수 있는 것",
+    placeholder="한 문장으로 적어 보세요.",
+    key="graph8_caption",
+)
+
+
+
+
+# --------------------------------------------------
+# 그래프 9. 첫 주 관객과 10위권 체류 기간의 관계
+# --------------------------------------------------
+st.divider()
+st.header("그래프 9. 첫 주에 관객이 많았던 영화는 10위권에도 오래 머무르는가")
+
+fig9 = px.scatter(
+    df,
+    x="first_week_audi",
+    y="days_in_top10",
+    hover_name="movieNm",
+    custom_data=["movieNm", "first_week_audi", "days_in_top10"],
+    title="첫 주에 관객이 많았던 영화는 10위권에도 오래 머무르는가",
+    labels={
+        "first_week_audi": "개봉 첫 주 관객",
+        "days_in_top10": "10위권에 머문 날수",
+    },
+)
+
+fig9.update_traces(
+    hovertemplate=(
+        "영화명: %{customdata[0]}<br>"
+        "개봉 첫 주 관객: %{customdata[1]:,}명<br>"
+        "10위권에 머문 날수: %{customdata[2]:,}일"
+        "<extra></extra>"
+    )
+)
+
+fig9.update_layout(
+    xaxis_title="개봉 첫 주 관객",
+    yaxis_title="10위권에 머문 날수",
+    margin=dict(t=60, b=20, l=20, r=20),
+)
+
+st.plotly_chart(fig9, use_container_width=True)
+
+st.text_input(
+    "이 그래프로 알 수 있는 것",
+    placeholder="한 문장으로 적어 보세요.",
+    key="graph9_caption",
 )
 
 
