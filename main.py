@@ -1,95 +1,108 @@
-import streamlit as st
 import pandas as pd
 import plotly.express as px
+import streamlit as st
 
-
-# 페이지 설정
+# --------------------------------------------------
+# 기본 설정
+# --------------------------------------------------
 st.set_page_config(
     page_title="영화 데이터 그래프 도감 2 - 분포와 관계",
     page_icon="🎬",
-    layout="wide"
+    layout="wide",
 )
 
-
-# 제목
 st.title("영화 데이터 그래프 도감 2 - 분포와 관계")
-
 st.write(
-    "1년간 박스오피스 10위권에 든 영화 가운데 "
-    "이 기간에 개봉한 영화들의 데이터를 살펴봅니다."
+    "1년간 박스오피스 10위권에 든 영화 가운데, "
+    "이 기간에 개봉한 216편의 요약 데이터를 살펴봅니다."
 )
 
+DATA_URL = "https://raw.githubusercontent.com/happykth/data/main/kobis_movies.csv"
 
+
+# --------------------------------------------------
 # 데이터 불러오기
-DATA_URL = (
-    "https://raw.githubusercontent.com/greatsong/modudata/"
-    "main/data/kobis_movies.csv"
-)
+# --------------------------------------------------
+@st.cache_data
+def load_data():
+    df = pd.read_csv(DATA_URL)
 
-df = pd.read_csv(DATA_URL)
+    # 장르가 여러 개 있으면 첫 번째 장르만 사용
+    df["genre"] = (
+        df["genre"]
+        .fillna("미분류")
+        .astype(str)
+        .str.split("|")
+        .str[0]
+        .str.strip()
+    )
 
+    # 장르가 비어 있는 경우 표시할 이름
+    df.loc[df["genre"].isin(["", "nan", "None"]), "genre"] = "미분류"
 
-# -------------------------
-# 데이터 전처리
-# -------------------------
-
-# 장르가 여러 개라면 첫 번째 장르만 사용
-df["genre_first"] = (
-    df["genre"]
-    .fillna("알 수 없음")
-    .astype(str)
-    .str.split("|")
-    .str[0]
-    .str.strip()
-)
-
-# 빈 장르는 '알 수 없음'으로 처리
-df.loc[df["genre_first"] == "", "genre_first"] = "알 수 없음"
+    return df
 
 
-# -------------------------
-# 그래프 1
-# -------------------------
+try:
+    df = load_data()
+except Exception as e:
+    st.error("데이터를 불러오지 못했습니다.")
+    st.info(
+        "인터넷 연결 상태와 데이터 주소를 확인한 뒤 다시 실행해 주세요."
+    )
+    st.caption(f"오류 내용: {e}")
+    st.stop()
 
+
+# --------------------------------------------------
+# 그래프 1. 장르별 영화 편수
+# --------------------------------------------------
 st.divider()
 st.header("그래프 1. 장르별 영화 편수")
 
-genre_count = (
-    df["genre_first"]
+genre_counts = (
+    df["genre"]
     .value_counts()
-    .reset_index()
+    .rename_axis("장르")
+    .reset_index(name="편수")
 )
 
-genre_count.columns = ["장르", "영화 편수"]
-
-
 fig = px.pie(
-    genre_count,
+    genre_counts,
     names="장르",
-    values="영화 편수",
-    hole=0.5,
-    title="장르별 영화 편수"
+    values="편수",
+    hole=0.55,
+    title="장르별 영화 편수",
 )
 
 fig.update_traces(
     hovertemplate=(
         "<b>%{label}</b><br>"
-        "영화 편수: %{value}편<br>"
-        "비율: %{percent}<extra></extra>"
+        "편수: %{value}편<br>"
+        "비율: %{percent}"
+        "<extra></extra>"
     )
 )
 
 fig.update_layout(
-    height=500,
-    margin=dict(t=70, b=20, l=20, r=20)
+    legend_title_text="장르",
+    margin=dict(t=60, b=20, l=20, r=20),
 )
 
 st.plotly_chart(fig, use_container_width=True)
 
-
-st.markdown("**이 그래프로 알 수 있는 것**")
 st.text_input(
-    "한 문장으로 적어 보세요.",
-    placeholder="예: 이 기간에는 ○○ 장르의 영화가 가장 많았다.",
-    key="graph1_caption"
+    "이 그래프로 알 수 있는 것",
+    placeholder="한 문장으로 적어 보세요.",
+    key="graph1_caption",
 )
+
+st.caption("💡 여러 장르가 적힌 영화는 첫 번째 장르만 집계했습니다.")
+
+
+# --------------------------------------------------
+# 이후 그래프를 추가할 자리
+# --------------------------------------------------
+# st.divider()
+# st.header("그래프 2. ...")
+# ...
