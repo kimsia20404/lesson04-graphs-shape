@@ -366,6 +366,67 @@ st.text_input(
 )
 
 
+
+
+# --------------------------------------------------
+# 그래프 7. 제작 국가 → 장르 선버스트
+# --------------------------------------------------
+st.divider()
+st.header("그래프 7. 제작 국가에서 장르로 내려가는 영화 분포")
+
+# 국가·장르별 영화 편수 계산
+sunburst_df = (
+    df.assign(편수=1)
+    .groupby(["nation", "genre"], as_index=False)["편수"]
+    .sum()
+)
+
+# 비어 있는 제작 국가는 미분류로 표시
+sunburst_df["nation"] = (
+    sunburst_df["nation"]
+    .fillna("미분류")
+    .astype(str)
+    .str.strip()
+    .replace("", "미분류")
+)
+
+# 비어 있는 장르는 미분류로 표시
+sunburst_df["genre"] = (
+    sunburst_df["genre"]
+    .fillna("미분류")
+    .astype(str)
+    .str.strip()
+    .replace("", "미분류")
+)
+
+fig7 = px.sunburst(
+    sunburst_df,
+    path=["nation", "genre"],
+    values="편수",
+    title="제작 국가 → 장르별 영화 편수",
+)
+
+fig7.update_traces(
+    hovertemplate=(
+        "<b>%{label}</b><br>"
+        "영화 편수: %{value}편"
+        "<extra></extra>"
+    )
+)
+
+fig7.update_layout(
+    margin=dict(t=60, b=20, l=20, r=20),
+)
+
+st.plotly_chart(fig7, use_container_width=True)
+
+st.text_input(
+    "이 그래프로 알 수 있는 것",
+    placeholder="한 문장으로 적어 보세요.",
+    key="graph7_caption",
+)
+
+
 # --------------------------------------------------
 # 이후 그래프를 추가할 자리
 # --------------------------------------------------
