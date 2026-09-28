@@ -143,6 +143,62 @@ st.text_input(
 )
 
 
+
+
+# --------------------------------------------------
+# 그래프 3. 총 관객 히스토그램
+# --------------------------------------------------
+st.divider()
+st.header("그래프 3. 총 관객 분포")
+
+fig3 = px.histogram(
+    df,
+    x="total_audi",
+    nbins=20,
+    title="영화별 총 관객 분포",
+    labels={"total_audi": "총 관객", "count": "영화 편수"},
+)
+
+fig3.update_traces(
+    hovertemplate=(
+        "총 관객 구간: %{x}<br>"
+        "영화 편수: %{y}편"
+        "<extra></extra>"
+    )
+)
+
+fig3.update_layout(
+    xaxis_title="총 관객",
+    yaxis_title="영화 편수",
+    margin=dict(t=60, b=20, l=20, r=20),
+)
+
+st.plotly_chart(fig3, use_container_width=True)
+
+# 가장 많은 영화가 속한 구간 계산
+hist_counts, bin_edges = pd.cut(
+    df["total_audi"],
+    bins=20,
+    include_lowest=True,
+    retbins=True,
+)
+bin_counts = hist_counts.value_counts().sort_index()
+most_common_bin = bin_counts.idxmax()
+
+# 총 관객이 가장 많은 영화 계산
+top_movie = df.loc[df["total_audi"].idxmax(), "movieNm"]
+top_audi = int(df["total_audi"].max())
+
+st.markdown(
+    f"""
+**이 그래프로 알 수 있는 것**  
+대부분의 영화는 **{most_common_bin.left:,.0f}명 ~ {most_common_bin.right:,.0f}명**의 총 관객 구간에 몰려 있습니다.
+
+가장 관객이 많은 영화는 **{top_movie}**으로, 총 관객은 **{top_audi:,}명**입니다.
+"""
+)
+
+
 # --------------------------------------------------
 # 이후 그래프를 추가할 자리
 # --------------------------------------------------
