@@ -254,6 +254,56 @@ st.text_input(
 )
 
 
+
+
+# --------------------------------------------------
+# 그래프 5. 장르별 총 관객 상자 그림
+# --------------------------------------------------
+st.divider()
+st.header("그래프 5. 장르별 총 관객 분포")
+
+# 영화가 10편 이상인 장르만 선택
+genre_movie_counts = df["genre"].value_counts()
+selected_genres = genre_movie_counts[genre_movie_counts >= 10].index
+box_df = df[df["genre"].isin(selected_genres)].copy()
+
+fig5 = px.box(
+    box_df,
+    x="genre",
+    y="total_audi",
+    points="outliers",
+    custom_data=["movieNm"],
+    title="영화가 10편 이상인 장르의 총 관객 분포",
+    labels={
+        "genre": "장르",
+        "total_audi": "총 관객",
+    },
+)
+
+# 상자 밖의 이상치 점에 영화명이 표시되도록 설정
+fig5.update_traces(
+    hovertemplate=(
+        "영화명: %{customdata[0]}<br>"
+        "총 관객: %{y:,}명"
+        "<extra></extra>"
+    )
+)
+
+fig5.update_layout(
+    xaxis_title="장르",
+    yaxis_title="총 관객",
+    margin=dict(t=60, b=20, l=20, r=20),
+)
+
+st.plotly_chart(fig5, use_container_width=True)
+
+st.text_input(
+    "이 그래프로 알 수 있는 것",
+    placeholder="한 문장으로 적어 보세요.",
+    key="graph5_caption",
+)
+
+
 # --------------------------------------------------
 # 이후 그래프를 추가할 자리
 # --------------------------------------------------
