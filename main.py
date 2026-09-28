@@ -49,6 +49,15 @@ def load_data():
     )
     df["total_audi"] = pd.to_numeric(df["total_audi"], errors="coerce").fillna(0)
 
+    # 개봉일 스크린 수를 숫자로 변환
+    df["first_scrn"] = (
+        df["first_scrn"]
+        .astype(str)
+        .str.replace(",", "", regex=False)
+        .str.strip()
+    )
+    df["first_scrn"] = pd.to_numeric(df["first_scrn"], errors="coerce").fillna(0)
+
     return df
 
 
@@ -196,6 +205,52 @@ st.markdown(
 
 가장 관객이 많은 영화는 **{top_movie}**으로, 총 관객은 **{top_audi:,}명**입니다.
 """
+)
+
+
+
+
+# --------------------------------------------------
+# 그래프 4. 개봉일 스크린 수와 총 관객의 관계
+# --------------------------------------------------
+st.divider()
+st.header("그래프 4. 개봉일 스크린 수와 총 관객")
+
+fig4 = px.scatter(
+    df,
+    x="first_scrn",
+    y="total_audi",
+    color="genre",
+    hover_name="movieNm",
+    title="개봉일 스크린 수와 총 관객의 관계",
+    labels={
+        "first_scrn": "개봉일 스크린수",
+        "total_audi": "총 관객",
+        "genre": "장르",
+    },
+)
+
+fig4.update_traces(
+    hovertemplate=(
+        "영화명: %{hovertext}<br>"
+        "개봉일 스크린수: %{x:,}개<br>"
+        "총 관객: %{y:,}명"
+        "<extra></extra>"
+    )
+)
+
+fig4.update_layout(
+    xaxis_title="개봉일 스크린수",
+    yaxis_title="총 관객",
+    margin=dict(t=60, b=20, l=20, r=20),
+)
+
+st.plotly_chart(fig4, use_container_width=True)
+
+st.text_input(
+    "이 그래프로 알 수 있는 것",
+    placeholder="한 문장으로 적어 보세요.",
+    key="graph4_caption",
 )
 
 
