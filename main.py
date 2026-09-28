@@ -58,6 +58,17 @@ def load_data():
     )
     df["first_scrn"] = pd.to_numeric(df["first_scrn"], errors="coerce").fillna(0)
 
+    # 개봉 첫 주 관객 수를 숫자로 변환
+    df["first_week_audi"] = (
+        df["first_week_audi"]
+        .astype(str)
+        .str.replace(",", "", regex=False)
+        .str.strip()
+    )
+    df["first_week_audi"] = pd.to_numeric(
+        df["first_week_audi"], errors="coerce"
+    ).fillna(0)
+
     return df
 
 
@@ -301,6 +312,57 @@ st.text_input(
     "이 그래프로 알 수 있는 것",
     placeholder="한 문장으로 적어 보세요.",
     key="graph5_caption",
+)
+
+
+
+
+# --------------------------------------------------
+# 그래프 6. 개봉일 스크린 수와 총 관객의 버블 그래프
+# --------------------------------------------------
+st.divider()
+st.header("그래프 6. 개봉일 스크린 수와 총 관객 - 버블 그래프")
+
+fig6 = px.scatter(
+    df,
+    x="first_scrn",
+    y="total_audi",
+    size="first_week_audi",
+    color="genre",
+    hover_name="movieNm",
+    custom_data=["movieNm", "first_scrn", "total_audi", "first_week_audi"],
+    size_max=55,
+    title="개봉일 스크린 수와 총 관객의 관계",
+    labels={
+        "first_scrn": "개봉일 스크린수",
+        "total_audi": "총 관객",
+        "first_week_audi": "첫 주 관객",
+        "genre": "장르",
+    },
+)
+
+fig6.update_traces(
+    hovertemplate=(
+        "영화명: %{customdata[0]}<br>"
+        "개봉일 스크린수: %{customdata[1]:,}개<br>"
+        "총 관객: %{customdata[2]:,}명<br>"
+        "첫 주 관객: %{customdata[3]:,}명"
+        "<extra></extra>"
+    )
+)
+
+fig6.update_layout(
+    xaxis_title="개봉일 스크린수",
+    yaxis_title="총 관객",
+    margin=dict(t=60, b=20, l=20, r=20),
+)
+
+st.plotly_chart(fig6, use_container_width=True)
+
+st.text_input(
+    "이 그래프로 알 수 있는 것",
+    placeholder="한 문장으로 적어 보세요.",
+    key="graph6_caption",
 )
 
 
